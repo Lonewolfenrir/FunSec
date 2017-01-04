@@ -135,7 +135,7 @@ This will create a directory called ps_scan. You must move this directory into t
 ./SecPipe.sh -[OPTION] [ARGUMENT]
 ```
 
-This script only works with FASTA format files. The headers of the sequences also should similar to Uniprot ID for example: sp|A7F996|3DHQ_SCLS1.
+This script only works with FASTA format files. The headers of the sequences should also be similar to Uniprot ID for example: sp|A7F996|3DHQ_SCLS1.
 
 ## Options ##
 
