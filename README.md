@@ -155,7 +155,7 @@ Coming.
 
 ## Contact ##
 
-For further information or feedback please open a issue thread.
+For further information or feedback please open a [issue](https://github.com/Lonewolfenrir/FunSec/issues).
 
 ## License ##
 
