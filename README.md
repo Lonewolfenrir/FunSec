@@ -155,14 +155,8 @@ Coming.
 
 ## Contact ##
 
-For further information or feedback please contact baptista.joao33@gmail.com.
+For further information or feedback please open a issue thread.
 
 ## License ##
 
 GPLv3, see LICENSE file for more information.
-
-## Version ##
-
-Version: 1.0
-
-Last Updated: 03/01/16
