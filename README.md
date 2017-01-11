@@ -1,4 +1,4 @@
-# FunSec - Fungi Secreted (or Secretome) Proteins Predictor Pipeline #
+# FunSec - Fungi Secreted Proteins (or Secretome) Predictor Pipeline #
 
 ## Description ##
 
