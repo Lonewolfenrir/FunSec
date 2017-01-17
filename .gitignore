@@ -1,4 +1,9 @@
-/bin-teste
+bin/WoLFPSort-master/
+bin/lin/
+bin/phobius/
+bin/ps_scan/
+bin/signalp-4.1/
+bin/tmhmm-2.0c/
 /input\ proteome
 /input
 /output
