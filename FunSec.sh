@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 
-#	FunSec - Fungi Secreted Proteins Predictor Pipeline.
+#	FunSec - Fungi Secreted Proteins (or Secretome) Predictor Pipeline.
 #	Copyright (C) 2016 João Baptista <baptista.joao33@gmail.com>
 #
 #	This program is free software: you can redistribute it and/or modify
@@ -27,7 +27,7 @@
 
 version() {
 echo -e "Version: 1.0
-Last Updated: 03-01-16"
+Last Updated: 21-02-17"
 }
 
 # Help text
@@ -55,8 +55,8 @@ echo -e "\nRunning SignalP 4.1.\n"
 mkdir "$OUTPUT"/FunSec_Output/SignalP
 ls "$INPUT"/ | while read i
 do
-  ./bin/signalp-4.1/signalp -m "$OUTPUT"/FunSec_Output/SignalP/"$i" "$INPUT"/"$i" 2> /dev/null | \
-  awk '{if ($1 != "#") print $1}'
+	./bin/signalp-4.1/signalp -m "$OUTPUT"/FunSec_Output/SignalP/"$i" "$INPUT"/"$i" 2> /dev/null | \
+	awk '{if ($1 != "#") print $1}'
 done
 echo -e "\nFinished. (Runtime - $SECONDS seconds)"
 }
@@ -68,14 +68,14 @@ echo -e "\nRunning TMHMM 2.0 with SignalP 4.1 mature sequences.\n"
 mkdir "$OUTPUT"/FunSec_Output/TMHMM
 ls "$OUTPUT"/FunSec_Output/SignalP/ | while read i
 do
-  ./bin/tmhmm-2.0c/bin/tmhmm -short "$OUTPUT"/FunSec_Output/SignalP/"$i" | \
-  awk '{if ($5=="PredHel=0") print $1}' | \
-  sort | \
-  tee "$OUTPUT"/FunSec_Output/TMHMM/"$i"
+	./bin/tmhmm-2.0c/bin/tmhmm -short "$OUTPUT"/FunSec_Output/SignalP/"$i" | \
+	awk '{if ($5=="PredHel=0") print $1}' | \
+	sort | \
+	tee "$OUTPUT"/FunSec_Output/TMHMM/"$i"
 done
 ls ./ | grep "TMHMM"| while read i  # Remove directories created by TMHMM
 do
-  rm -rf "$i"
+	rm -rf "$i"
 done
 echo -e "\nFinished. (Runtime - $SECONDS seconds)"
 }
@@ -90,7 +90,7 @@ do
 	./bin/phobius/phobius.pl -short < "$INPUT"/"$i" 2> /dev/null | \
 	awk '{if ($2 == "0" && $3 =="Y") print $1}' | \
 	sort | \
-  tee "$OUTPUT"/FunSec_Output/Phobius/"$i"
+	tee "$OUTPUT"/FunSec_Output/Phobius/"$i"
 done
 echo -e "\nFinished. (Runtime - $SECONDS seconds)"
 }
@@ -102,7 +102,7 @@ echo -e "\nSelecting the common sequences found by SignalP 4.1 + TMHMM 2.0 and P
 mkdir "$OUTPUT"/FunSec_Output/SignalP_TMHMM_Phobius "$OUTPUT"/FunSec_Output/SignalP_TMHMM_Phobius/Headers
 ls "$OUTPUT"/FunSec_Output/TMHMM/ | while read i  # The path is "$OUTPUT"/FunSec_Output/TMHMM/"$i" because the output of phobius may contain empty files.
 do
-  comm -12 "$OUTPUT"/FunSec_Output/Phobius/"$i" "$OUTPUT"/FunSec_Output/TMHMM/"$i" > "$OUTPUT"/FunSec_Output/SignalP_TMHMM_Phobius/Headers/"$i"
+	comm -12 "$OUTPUT"/FunSec_Output/Phobius/"$i" "$OUTPUT"/FunSec_Output/TMHMM/"$i" > "$OUTPUT"/FunSec_Output/SignalP_TMHMM_Phobius/Headers/"$i"
 done
 echo -e "\nFinished. (Runtime - $SECONDS seconds)"
 }
@@ -134,7 +134,7 @@ do
 	sed 's/,//g' | \
 	awk -v w="$THRESHOLD_WOLFPSORT" 'BEGIN {FS=" "} {if ($2 == "extr" && $3 > w) print $1}' | \
 	sort | \
-  tee "$OUTPUT"/FunSec_Output/WolfPsort/"$i"
+	tee "$OUTPUT"/FunSec_Output/WolfPsort/"$i"
 done
 echo -e "\nFinished. (Runtime - $SECONDS seconds)"
 }
@@ -149,7 +149,7 @@ do
 	./bin/lin/pc_fm "$OUTPUT"/FunSec_Output/SignalP_TMHMM_Phobius/Sequences/"$i" -NODB -NOOL | \
 	awk 'BEGIN {RS="Seq name: "} /Integral Prediction of protein location: Membrane bound Extracellular/ || /Integral Prediction of protein location: Extracellular/ {print $1}' | \
 	sort | \
-  tee "$OUTPUT"/FunSec_Output/ProtComp/"$i"
+	tee "$OUTPUT"/FunSec_Output/ProtComp/"$i"
 done
 echo -e "\nFinished. (Runtime - $SECONDS seconds)"
 }
@@ -193,7 +193,7 @@ do
 	awk 'BEGIN{RS=">"} {print $1}' | \
 	sed '/^$/d' | \
 	sort | \
-  tee "$OUTPUT"/FunSec_Output/Ps-scan/"$i"
+	tee "$OUTPUT"/FunSec_Output/Ps-scan/"$i"
 done
 echo -e "\nFinished. (Runtime - $SECONDS seconds)"
 }
@@ -312,10 +312,10 @@ done
 
 if [ $FLAG_INPUT == 1 ] && [ $FLAG_OUTPUT == 1 ]
 then
-  cd $(dirname $0)
+	cd $(dirname $0)
 	echo -e "\nThe program $0 is running, it may take a while. I encourage you to go outside or to pet some animal."
-  signalp && tmhmm && phobius && signalp_tmhmm_phobius && signalp_tmhmm_phobius_retriever && wolfpsort && protcomp && wolfpsort_protcomp && wolfpsort_protcomp_retriever && ps_scan && ps_scan_remover && ps_scan_retriever
-  exit 0
+	signalp && tmhmm && phobius && signalp_tmhmm_phobius && signalp_tmhmm_phobius_retriever && wolfpsort && protcomp && wolfpsort_protcomp && wolfpsort_protcomp_retriever && ps_scan && ps_scan_remover && ps_scan_retriever
+	exit 0
 else
 	echo -e "\nBoth options -i and -o must be specified. Use -h for more information."
 	exit 1
