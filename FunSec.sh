@@ -29,7 +29,7 @@ set -eo pipefail
 
 version() {
 echo -e "Version: 1.0
-Last Updated: 21-02-17"
+Last Updated: 04-04-17"
 }
 
 # Help text
@@ -57,9 +57,9 @@ echo -e "\nRunning SignalP 4.1.\n"
 mkdir "$OUTPUT"/FunSec_Output/SignalP
 ls "$INPUT"/ | while read -r i
 do
-	./bin/signalp-4.1/signalp -m "$OUTPUT"/FunSec_Output/SignalP/"$i" "$INPUT"/"$i" 2> /dev/null | \
+	"$(dirname "$0")"/bin/signalp-4.1/signalp -m "$OUTPUT"/FunSec_Output/SignalP/"$i" "$INPUT"/"$i" 2> /dev/null | \
 	awk '{if ($1 != "#") print $1}'
-done
+done 
 echo -e "\nFinished. (Runtime - $SECONDS seconds)"
 }
 
@@ -70,15 +70,12 @@ echo -e "\nRunning TMHMM 2.0 with SignalP 4.1 mature sequences.\n"
 mkdir "$OUTPUT"/FunSec_Output/TMHMM
 ls "$OUTPUT"/FunSec_Output/SignalP/ | while read -r i
 do
-	./bin/tmhmm-2.0c/bin/tmhmm -short "$OUTPUT"/FunSec_Output/SignalP/"$i" | \
+	"$(dirname "$0")"/bin/tmhmm-2.0c/bin/tmhmm -short "$OUTPUT"/FunSec_Output/SignalP/"$i" | \
 	awk '{if ($5=="PredHel=0") print $1}' | \
 	sort | \
 	tee "$OUTPUT"/FunSec_Output/TMHMM/"$i"
 done
-ls ./ | grep "TMHMM"| while read -r i  # Remove directories created by TMHMM
-do
-	rm -rf "$i"
-done
+find ./ -type d -name "TMHMM_*" -prune -exec rm -rf {} \;
 echo -e "\nFinished. (Runtime - $SECONDS seconds)"
 }
 
@@ -89,7 +86,7 @@ echo -e "\nRunning Phobius 1.01.\n"
 mkdir "$OUTPUT"/FunSec_Output/Phobius
 ls "$INPUT"/ | while read -r i
 do
-	./bin/phobius/phobius.pl -short < "$INPUT"/"$i" 2> /dev/null | \
+	"$(dirname "$0")"/bin/phobius/phobius.pl -short < "$INPUT"/"$i" 2> /dev/null | \
 	awk '{if ($2 == "0" && $3 =="Y") print $1}' | \
 	sort | \
 	tee "$OUTPUT"/FunSec_Output/Phobius/"$i"
@@ -116,11 +113,11 @@ echo -e "\nRetriving the common sequences of SignalP 4.1 + TMHMM 2.0 and Phobius
 mkdir "$OUTPUT"/FunSec_Output/SignalP_TMHMM_Phobius/Sequences
 ls "$OUTPUT"/FunSec_Output/SignalP_TMHMM_Phobius/Headers | while read -r i
 do
-	for f in $(cat "$OUTPUT"/FunSec_Output/SignalP_TMHMM_Phobius/Headers/"$i")
+	while read -r f
 	do
 		awk -v f="$f" 'BEGIN {RS=">"} {if ($1 == f) print RS$0}' "$INPUT"/"$i" | \
-    sed '/^$/d' >> "$OUTPUT"/FunSec_Output/SignalP_TMHMM_Phobius/Sequences/"$i"
-	done
+		sed '/^$/d' >> "$OUTPUT"/FunSec_Output/SignalP_TMHMM_Phobius/Sequences/"$i"
+	done < "$OUTPUT"/FunSec_Output/SignalP_TMHMM_Phobius/Headers/"$i"
 done
 echo -e "\nFinished. (Runtime - $SECONDS seconds)"
 }
@@ -132,7 +129,7 @@ echo -e "\nRunning WolfPsort 0.2.\n"
 mkdir "$OUTPUT"/FunSec_Output/WolfPsort
 ls "$OUTPUT"/FunSec_Output/SignalP_TMHMM_Phobius/Sequences/ | while read -r i
 do
-	./bin/WoLFPSort-master/bin/runWolfPsortSummary fungi < "$OUTPUT"/FunSec_Output/SignalP_TMHMM_Phobius/Sequences/"$i" | \
+	"$(dirname "$0")"/bin/WoLFPSort-master/bin/runWolfPsortSummary fungi < "$OUTPUT"/FunSec_Output/SignalP_TMHMM_Phobius/Sequences/"$i" | \
 	sed 's/,//g' | \
 	awk -v w="$THRESHOLD_WOLFPSORT" 'BEGIN {FS=" "} {if ($2 == "extr" && $3 > w) print $1}' | \
 	sort | \
@@ -148,8 +145,9 @@ echo -e "\nRunning ProtComp 9.0.\n"
 mkdir "$OUTPUT"/FunSec_Output/ProtComp
 ls "$OUTPUT"/FunSec_Output/SignalP_TMHMM_Phobius/Sequences/ | while read -r i
 do
-	./bin/lin/pc_fm "$OUTPUT"/FunSec_Output/SignalP_TMHMM_Phobius/Sequences/"$i" -NODB -NOOL | \
+	"$(dirname "$0")"/bin/lin/pc_fm "$OUTPUT"/FunSec_Output/SignalP_TMHMM_Phobius/Sequences/"$i" -NODB -NOOL | \
 	awk 'BEGIN {RS="Seq name: "} /Integral Prediction of protein location: Membrane bound Extracellular/ || /Integral Prediction of protein location: Extracellular/ {print $1}' | \
+	tr -d "," | \
 	sort | \
 	tee "$OUTPUT"/FunSec_Output/ProtComp/"$i"
 done
@@ -175,11 +173,11 @@ echo -e "\nRetriving the common sequences of WolfPsort 0.2 and ProtComp 9.0."
 mkdir "$OUTPUT"/FunSec_Output/WolfPsort_ProtComp/Sequences
 ls "$OUTPUT"/FunSec_Output/WolfPsort_ProtComp/Headers/ | while read -r i
 do
-	for f in $(cat "$OUTPUT"/FunSec_Output/WolfPsort_ProtComp/Headers/"$i")
+	while read -r f
 	do
 		awk -v f="$f" 'BEGIN {RS=">"} {if ($1 == f) print RS$0}' "$OUTPUT"/FunSec_Output/SignalP_TMHMM_Phobius/Sequences/"$i" | \
 		sed '/^$/d' >> "$OUTPUT"/FunSec_Output/WolfPsort_ProtComp/Sequences/"$i"
-	done
+	done < "$OUTPUT"/FunSec_Output/WolfPsort_ProtComp/Headers/"$i"
 done
 echo -e "\nFinished. (Runtime - $SECONDS seconds)"
 }
@@ -191,7 +189,7 @@ echo -e "\nRunning Ps-scan 1.86.\n"
 mkdir "$OUTPUT"/FunSec_Output/Ps-scan
 ls "$OUTPUT"/FunSec_Output/WolfPsort_ProtComp/Sequences/ | while read -r i
 do
-	./bin/ps_scan/ps_scan.pl -p "[KRHQSA]-[DENQ]-E-L>" "$OUTPUT"/FunSec_Output/WolfPsort_ProtComp/Sequences/"$i" | \
+	"$(dirname "$0")"/bin/ps_scan/ps_scan.pl -p "[KRHQSA]-[DENQ]-E-L>" "$OUTPUT"/FunSec_Output/WolfPsort_ProtComp/Sequences/"$i" | \
 	awk 'BEGIN{RS=">"} {print $1}' | \
 	sed '/^$/d' | \
 	sort | \
@@ -219,11 +217,11 @@ echo -e "\nRetriving final secreted sequences."
 mkdir "$OUTPUT"/FunSec_Output/Final/Sequences
 ls "$OUTPUT"/FunSec_Output/Final/Headers/ | while read -r i
 do
-	for f in $(cat "$OUTPUT"/FunSec_Output/Final/Headers/"$i")
+	while read -r f	
 	do
 		awk -v f="$f" 'BEGIN{RS=">"} {if ($1 == f) print RS$0}' "$OUTPUT"/FunSec_Output/WolfPsort_ProtComp/Sequences/"$i" | \
 		sed '/^$/d' >> "$OUTPUT"/FunSec_Output/Final/Sequences/"$i"
-	done
+	done < "$OUTPUT"/FunSec_Output/Final/Headers/"$i"
 done
 echo -e "\nFinished. (Runtime - $SECONDS seconds)"
 }
@@ -264,7 +262,7 @@ do
 				FLAG_OUTPUT=1
 				if [ -d "$OUTPUT"/FunSec_Output ]	# if $OUTPUT/FunSec_Output exists it will ask for permission to overwrite.
 				then
-					echo -e "\n$OUTPUT/FunSec_Output already exists, this will overwrite it. Do you want to continue? [Y/n]"
+					echo -ne "\n$OUTPUT/FunSec_Output already exists, this will overwrite it. Do you want to continue? [Y/n]  "
 					read -r FLAG_OVERWRITE
 					if [ "$FLAG_OVERWRITE" == "yes" ] || [ "$FLAG_OVERWRITE" == "y" ] || [ "$FLAG_OVERWRITE" == "Yes" ] || [ "$FLAG_OVERWRITE" == "Y" ]
 					then
@@ -314,7 +312,6 @@ done
 
 if [ $FLAG_INPUT == 1 ] && [ $FLAG_OUTPUT == 1 ]
 then
-	cd "$(dirname "$0")" || exit 1
 	echo -e "\nThe program $0 is running, it may take a while. I encourage you to go outside or to pet some animal."
 	signalp && tmhmm && phobius && signalp_tmhmm_phobius && signalp_tmhmm_phobius_retriever && wolfpsort && protcomp && wolfpsort_protcomp && wolfpsort_protcomp_retriever && ps_scan && ps_scan_remover && ps_scan_retriever
 	exit 0
@@ -322,4 +319,3 @@ else
 	echo -e "\nBoth options -i and -o must be specified. Use -h for more information."
 	exit 1
 fi
-
