@@ -114,9 +114,7 @@ Options:
 
         The options -d or -f and -o and their respective arguments must be specified. For more information read the README.md file.
 
-Please cite this script as well as all the programs that are used in this script including GNU Parallel, if the option -p was used. Thank you!
-
-DOI: https://doi.org/10.5281/zenodo.238855" 
+Please cite this script as well as all the programs that are used in this script including GNU Parallel, if the option -p was used. Thank you!"
 }
 
 # Function to check the input directory

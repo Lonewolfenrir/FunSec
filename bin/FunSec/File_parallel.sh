@@ -27,9 +27,7 @@ trap 'find "$OUTPUT"/FunSec_Output -empty -delete ; find ./ -maxdepth 1 -type d 
 # Citation 
 
 citation() {
-	echo -e "\nPlease cite this script as well as all the programs that are used in this script including GNU Parallel. Thank you!   
-
-DOI: https://doi.org/10.5281/zenodo.238855"
+	echo -e "\nPlease cite this script as well as all the programs that are used in this script including GNU Parallel. Thank you!"   
 }
 
 # SignalP 4.1  
