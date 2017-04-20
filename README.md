@@ -1,14 +1,14 @@
-# FunSec - Fungi Secreted Proteins (or Secretome) Predictor Pipeline #
+# FunSec - Fungal Secreted Proteins (or Secretome) Predictor Pipeline #
 
 ## Description ##
 
-This script was designed to automate the prediction of fungi secreted proteins from a single or a batch of FASTA files using a complex pipeline that uses programs for the prediction of signal peptides, trans-membrane regions, subcellular localization and endoplasmic reticulum targeting motif. It can also be used for the prediction of complete fungi secretomes when given their proteomes.
+This script was designed to automate the prediction of fungal secreted proteins from single or multiple FASTA files using a complex pipeline that uses programs for the prediction of signal peptides, trans-membrane regions, subcellular localization and endoplasmic reticulum targeting motif. It can also be used for the prediction of complete fungal secretomes when given their proteomes.
 
-To predict signal peptides and trans-membrane regions we used two different methods and only the proteins that were predicted by both methods were selected for further analysis. The first method uses SignalP 4.1 and TMHMM 2.0 to predict signal peptides and trans-membrane regions respectively. The second method uses Phobius 1.01 which predicts both signal peptides and trans-membrane regions. By using two methods that rely in different approaches for their predictions we were able to reduce the rate of false positives. The subcellular localization prediction was made using two predictors, WolfPsort 0.2 and ProtComp 9.0 and their output was combined. Finally, Ps-scan 1.86 with the profile of the Prosite motif entry, PS00014, was used to predict the endoplasmic reticulum proteins.
+To predict signal peptides and trans-membrane regions we used two different methods and only the proteins that were predicted by both methods were selected for further analysis. The first method uses SignalP 4.1 and TMHMM 2.0 to predict signal peptides and trans-membrane regions respectively. The second method uses Phobius 1.01 which predicts both signal peptides and trans-membrane regions. By using two methods that rely in different approaches for their predictions we were able to reduce the rate of false positives. The subcellular localization prediction was made using two predictors, WolfPsort 0.2 and ProtComp 9.0 and again only the common proteins were selected. Finally, Ps-scan 1.86 with the profile of the Prosite motif entry, PS00014, was used to predict the endoplasmic reticulum proteins.
 
 ## Requirements ##
 
-First, this script needs the programs described above, so users will have to install each program individually into the bin directory of this script, with the following structure:
+This script only runs in **Linux** and Perl needs to be installed. The script needs the programs described above, so users will have to install each program individually into the bin directory of this script, with the following structure:
 
 ```
 -bin
@@ -20,21 +20,15 @@ First, this script needs the programs described above, so users will have to ins
   |-WoLFPSort-master
 ```
 
-This script only runs in **Linux** and Perl needs to be installed.
-
 #### SignalP 4.1 ####
 
-First to download SignalP 4.1, visit <http://www.cbs.dtu.dk/cgi-bin/nph-sw_request?signalp> and download the program for the Unix platform.
-
-You should receive a tar.gz file. To untar the file use the following command line:
+First, to download SignalP 4.1 visit <http://www.cbs.dtu.dk/cgi-bin/nph-sw_request?signalp> and download the program for the Unix platform. You should receive a tar.gz file. To untar the file use the following command in your terminal:
 
 ```
 tar -zxvf FILE.tar.gz
 ```
 
-This will create a directory called signalp-4.1. You must move this directory into the bin directory of this script.
-
-Now you must edit the file signalp in the directory bin/signalp-4.1/. You should see something like this:
+This will create a directory called signalp-4.1. You must move this directory into the bin directory of this script. Then you must edit the file signalp in the directory bin/signalp-4.1/. You should see something like this:
 
 ```
 # full path to the signalp-4.1 directory on your system (mandatory)
@@ -55,17 +49,13 @@ For more instructions go to <http://www.cbs.dtu.dk/services/doc/signalp-4.1.read
 
 #### TMHMM 2.0 ####
 
-To download TMHMM 2.0 for the Unix platform visit <http://www.cbs.dtu.dk/cgi-bin/sw_request?tmhmm>.
-
-You should receive a tar.gz file. To untar the file use the following command line:
+To download TMHMM 2.0 for the Unix platform visit <http://www.cbs.dtu.dk/cgi-bin/sw_request?tmhmm>. You should receive a tar.gz file. To untar the file use the following command:
 
 ```
 tar -zxvf FILE.tar.gz
 ```
 
-This will create a directory called tmhmm-2.0c. You must move this directory into the bin directory of this script.
-
-Now you will probably have to edit the first line of the files tmhmm and tmhmmformat.pl in the directory bin/tmhmm-2.0c/bin/. Run the following command:
+This will create a directory called tmhmm-2.0c. You must move this directory into the bin directory of this script. Now you will probably have to edit the first line of the files tmhmm and tmhmmformat.pl in the directory bin/tmhmm-2.0c/bin/. Run the following command:
 
 ```
 which perl
@@ -75,9 +65,7 @@ If the output isn't /usr/local/bin/perl, then you must change the path in the fi
 
 #### Phobius 1.01 ####
 
-To download Phobius 1.01 visit <http://software.sbc.su.se/cgi-bin/request.cgi?project=phobius>.
-
-You should receive a tar.gz file. To untar the file use the following command line:
+To download Phobius 1.01 visit <http://software.sbc.su.se/cgi-bin/request.cgi?project=phobius>. You should receive a tar.gz file. To untar the file use the following command:
 
 ```
 tar -zxvf FILE.tar.gz
@@ -93,7 +81,7 @@ To download WolfPsort you can go to <https://github.com/fmaguire/WoLFPSort> or u
 wget https://github.com/fmaguire/WoLFPSort/archive/master.zip
 ```
 
-You should receive a zip file. To unzip the file use the following command line:
+You should receive a zip file. To unzip the file use the following command:
 
 ```
 unzip FILE.zip
@@ -103,9 +91,7 @@ Then move the file WoLFPSort-master to the bin directory of this script.
 
 #### ProtComp 9.0 ####
 
-To download ProtComp you can go to <http://linux5.softberry.com/cgi-bin/download.pl?file=protcompan>.
-
-You should receive a tar.bz2 file. To untar the file use the following command line:
+To download ProtComp you can go to <http://linux5.softberry.com/cgi-bin/download.pl?file=protcompan>. You should receive a tar.bz2 file. To untar the file use the following command:
 
 ```
 tar -xvjf FILE.tar.bz2
@@ -121,7 +107,7 @@ To download Ps-scan 1.86 you can go to <ftp://ftp.expasy.org/databases/prosite/p
 wget ftp://ftp.expasy.org/databases/prosite/ps_scan/ps_scan_linux_x86_elf.tar.gz
 ```
 
-You should receive a tar.gz file. To untar the file use the following command line:
+You should receive a tar.gz file. To untar the file use the following command:
 
 ```
 tar -zxvf FILE.tar.gz
@@ -129,29 +115,35 @@ tar -zxvf FILE.tar.gz
 
 This will create a directory called ps_scan. You must move this directory into the bin directory of this script.
 
+#### GNU Parallel ####
+
+To use the option '-p' of the script, GNU Parallel must be installed. Using GNU Parallel speeds up the pipeline by executing the programs in parallel. This program should be in the repositories of your Linux system.
+
 ## Usage ##
 
 This script only works with FASTA format files.
 
-The headers of the sequences should also be similar to Uniprot or GenBank ID for example: sp|A7F996|3DHQ_SCLS1 or OJD28591.1.
-
 ```
-./SecPipe.sh -[OPTION] [ARGUMENT]
+./FunSec.sh -[OPTION] [ARGUMENT]
 ```
 
 ## Options ##
 
 ```
--i,		Input directory.
+-d,		Input directory (for multiple files).
+-f,		Input file.
 -o,		Output directory.
--h,		Displays help message.
--w,		Threshold number for the program WolfPsort 0.2. Must be in the range of 1-30, the default value is 17.
+-h,		Displays this message.
+-w,		Threshold number for the program WolfPsort 0.2. Must be in the range 1-30. The default value is 17.
+-p,		Runs the script in parallel, which makes it faster. GNU Parallel must be installed.
 -v,		Displays version.
 
-Both options -i and -o must be specified.
+The options -d or -f and -o and their respective arguments must be specified. 
 ```
 
 ## Citation ##
+
+Please cite this script as well as all the programs that are used in this script including GNU Parallel, if the option -p was used. Thank you!
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.238855.svg)](https://doi.org/10.5281/zenodo.238855)
 
