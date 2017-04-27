@@ -24,6 +24,7 @@
 # - SignalP options
 # - The grep that displays the final output can tell the empty files that aren't removed in the Final directory 
 # - parallelize retriving the seqs
+# - Read from stdin
 
 
 set -euo pipefail
