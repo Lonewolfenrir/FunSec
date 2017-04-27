@@ -22,7 +22,7 @@ set -euo pipefail
 
 # Trap
 
-trap 'find "$OUTPUT"/FunSec_Output -empty -delete ; find ./ -maxdepth 1 -type d -name "TMHMM_*" -exec rm -rf {} \;' SIGHUP SIGINT SIGTERM SIGQUIT ERR EXIT
+trap 'find "$OUTPUT"/FunSec_Output -empty -delete ; find ./ -maxdepth 1 -type d -name "TMHMM_*" -exec rm -rf {} \; ; find ./ -type d -name "Headers" -exec rm -rf {} +' SIGHUP SIGINT SIGTERM SIGQUIT ERR EXIT
 
 # Citation 
 
@@ -37,7 +37,7 @@ SIGNALP_AWK='{if ($10 == "Y") print $1}'
 echo -e "\nRunning SignalP 4.1...\n"
 mkdir -p "$OUTPUT"/FunSec_Output/SignalP/Log
 find "$INPUT_DIR" -maxdepth 1 -type f | \
-	parallel --will-cite ""$SCRIPT_DIR"/bin/signalp-4.1/signalp -m "$OUTPUT"/FunSec_Output/SignalP/{/} {} 2> /dev/null | tee -a "$OUTPUT"/FunSec_Output/SignalP/Log/SignalP.log | awk '$SIGNALP_AWK'"
+	parallel --will-cite ""$SCRIPT_DIR"/bin/signalp-4.1/signalp -m "$OUTPUT"/FunSec_Output/SignalP/{/} {} 2> /dev/null | tee -a "$OUTPUT"/FunSec_Output/SignalP/Log/SignalP.log | awk '$SIGNALP_AWK' | sort"
 if [ "$(find "$OUTPUT"/FunSec_Output/SignalP -maxdepth 1 -type f -empty | wc -l)" -eq "$(find "$OUTPUT"/FunSec_Output/SignalP -maxdepth 1 -type f | wc -l)" ]
 then 
 	echo -e "No proteins were predicted with a signal peptide. Existing..."
@@ -110,7 +110,7 @@ WOLFPSORT_AWK='BEGIN {FS=" "} {if ($2 == "extr" && $3 > w) print $1}'
 echo -e "\nRunning WolfPsort 0.2...\n"
 mkdir -p "$OUTPUT"/FunSec_Output/WolfPsort/Log
 find "$OUTPUT"/FunSec_Output/SignalP_TMHMM_Phobius -maxdepth 1 -type f | \
-	parallel --will-cite ""$SCRIPT_DIR"/bin/WoLFPSort-master/bin/runWolfPsortSummary fungi < {} | tee -a "$OUTPUT"/FunSec_Output/WolfPsort/Log/WolfPsort.log | grep -E -o '.* extr [0-9]{,2}' |awk -v w="$THRESHOLD_WOLFPSORT" '$WOLFPSORT_AWK' | sort | tee "$OUTPUT"/FunSec_Output/WolfPsort/{/}"
+	parallel --will-cite ""$SCRIPT_DIR"/bin/WoLFPSort-master/bin/runWolfPsortSummary fungi < {} | tee -a "$OUTPUT"/FunSec_Output/WolfPsort/Log/WolfPsort.log | grep -E -o '.* extr [0-9]{,2}' | awk -v w="$THRESHOLD_WOLFPSORT" '$WOLFPSORT_AWK' | sort | tee "$OUTPUT"/FunSec_Output/WolfPsort/{/}"
 if [ "$(find "$OUTPUT"/FunSec_Output/WolfPsort -maxdepth 1 -type f -empty | wc -l)" -eq "$(find "$OUTPUT"/FunSec_Output/WolfPsort -maxdepth 1 -type f | wc -l)" ]
 then 
 	echo -e "No proteins were predicted to be secreted. Existing..."

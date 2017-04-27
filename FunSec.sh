@@ -24,8 +24,6 @@
 # - SignalP options
 # - The grep that displays the final output can tell the empty files that aren't removed in the Final directory 
 # - parallelize retriving the seqs
-# - trap, delete headers?
-# - Automate the modification demanded by the requirements
 
 
 set -euo pipefail
@@ -46,6 +44,26 @@ FLAG_WOLFPSORT=0
 FLAG_PARALLEL=0
 FLAG_HELP=0
 FLAG_VERSION=0
+
+# Setup
+
+if [ -f "$SCRIPT_DIR"/bin/signalp-4.1/signalp ]
+then
+	sed -i "13s|.*|    \$ENV{SIGNALP} = '$SCRIPT_DIR/bin/signalp-4.1';|" "$SCRIPT_DIR"/bin/signalp-4.1/signalp 
+	sed -i "20s|.*|my \$MAX_ALLOWED_ENTRIES=100000;|" "$SCRIPT_DIR"/bin/signalp-4.1/signalp
+else
+	echo -e "Could not find the file signalp. Existing..."
+	exit 1
+fi
+
+if [ -f "$SCRIPT_DIR"/bin/tmhmm-2.0c/bin/tmhmm ] && [ -f "$SCRIPT_DIR"/bin/tmhmm-2.0c/bin/tmhmmformat.pl ]
+then
+	sed -i "1s|.*|#!$(which perl)|" "$SCRIPT_DIR"/bin/tmhmm-2.0c/bin/tmhmm
+	sed -i "1s|.*|#!$(which perl)|" "$SCRIPT_DIR"/bin/tmhmm-2.0c/bin/tmhmmformat.pl
+else
+	echo -e "Could not find the files tmhmm and tmhmmformat.pl. Existing..."
+	exit 1
+fi
 
 # Command options and arguments parser
 
@@ -91,8 +109,8 @@ done
 # Version
 
 version() {
-	echo -e "Version: 2.0
-Last Updated: 20-04-17."
+	echo -e "Version: 2.1
+Last Updated: 27-04-17."
 }
 
 # Help 
@@ -251,9 +269,8 @@ then
 	parallel_check && \
 	input_file_check && \
 	output_check && \
-	echo -e "Still a work in progress. Use -h for more information"
-	#echo -e  "\nThe program $0 is running in parallel, it may take a while. I encourage you to go outside or to pet some animal."
-	#bash "$SCRIPT_DIR"/bin/FunSec/File_parallel.sh | tee -a "$OUTPUT"/FunSec_Output/FunSec.log
+	echo -e  "\nThe program $0 is running in parallel, it may take a while. I encourage you to go outside or to pet some animal."
+	bash "$SCRIPT_DIR"/bin/FunSec/File_parallel.sh | tee -a "$OUTPUT"/FunSec_Output/FunSec.log
 	exit 0
 elif [ "$FLAG_INPUT_DIR" -eq 1 ] && [ "$FLAG_OUTPUT" -eq 1 ]  && [ "$FLAG_PARALLEL" -eq 0 ] # if the -d and -o options were given
 then

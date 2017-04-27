@@ -22,7 +22,7 @@ set -euo pipefail
 
 # Trap
 
-trap 'find "$OUTPUT"/FunSec_Output -empty -delete ; find ./ -maxdepth 1 -type d -name "TMHMM_*" -exec rm -rf {} \;' SIGHUP SIGINT SIGTERM SIGQUIT ERR EXIT
+trap 'find "$OUTPUT"/FunSec_Output -empty -delete ; find ./ -maxdepth 1 -type d -name "TMHMM_*" -exec rm -rf {} \; ; find ./ -type d -name "Headers" -exec rm -rf {} +' SIGHUP SIGINT SIGTERM SIGQUIT ERR EXIT
 
 # Citation 
 
@@ -36,7 +36,8 @@ echo -e "\nRunning SignalP 4.1...\n"
 mkdir -p "$OUTPUT"/FunSec_Output/SignalP/Log
 "$SCRIPT_DIR"/bin/signalp-4.1/signalp -m "$OUTPUT"/FunSec_Output/SignalP/"$FILE_NAME" "$INPUT_FILE" 2> /dev/null | \
 tee -a "$OUTPUT"/FunSec_Output/SignalP/Log/SignalP.log | \
-awk '{if ($10 == "Y") print $1}' 
+awk '{if ($10 == "Y") print $1}' | \
+sort
 if [ ! -s "$OUTPUT"/FunSec_Output/SignalP/"$FILE_NAME" ]
 then 
 	echo -e "No proteins were predicted with a signal peptide. Existing..."

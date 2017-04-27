@@ -22,7 +22,7 @@ set -euo pipefail
 
 # Trap
 
-trap 'find "$OUTPUT"/FunSec_Output -empty -delete ; find ./ -maxdepth 1 -type d -name "TMHMM_*" -exec rm -rf {} \;' SIGHUP SIGINT SIGTERM SIGQUIT ERR EXIT
+trap 'find "$OUTPUT"/FunSec_Output -empty -delete ; find ./ -maxdepth 1 -type d -name "TMHMM_*" -exec rm -rf {} \; ; find ./ -type d -name "Headers" -exec rm -rf {} +' SIGHUP SIGINT SIGTERM SIGQUIT ERR EXIT
 
 # Citation 
 
@@ -38,7 +38,8 @@ find "$INPUT_DIR" -maxdepth 1 -type f -exec basename {} \; | while read -r i
 do
 	"$SCRIPT_DIR"/bin/signalp-4.1/signalp -m "$OUTPUT"/FunSec_Output/SignalP/"$i" "$INPUT_DIR"/"$i" 2> /dev/null | \
 	tee -a "$OUTPUT"/FunSec_Output/SignalP/Log/SignalP.log | \
-	awk '{if ($10 == "Y") print $1}'
+	awk '{if ($10 == "Y") print $1}' | \
+	sort
 done
 if [ "$(find "$OUTPUT"/FunSec_Output/SignalP -maxdepth 1 -type f -empty | wc -l)" -eq "$(find "$OUTPUT"/FunSec_Output/SignalP -maxdepth 1 -type f | wc -l)" ]
 then 
