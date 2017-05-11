@@ -230,6 +230,14 @@ parallel_check() {
 	fi
 }
 
+# Exits if both -f and -d were given
+
+if [ "$FLAG_INPUT_DIR" -eq 1 ] && [ "$FLAG_INPUT_FILE" -eq 1 ] 
+then
+	echo -e "\nSelect either -f or -d. Use -h for more information."
+	exit 1
+fi
+
 # Runs the help function
 
 if [ "$FLAG_HELP" -eq 1 ] # if the -h option was given
