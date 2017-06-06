@@ -50,7 +50,7 @@ To download Phobius 1.01 visit <http://software.sbc.su.se/cgi-bin/request.cgi?pr
 tar -zxvf FILE.tar.gz
 ```
 
-This will create a directory called phobius. You must move this directory into the bin directory of this script.
+This will create a directory called tmp, inside it there is two more directories, with one of them named phobius. You must move the directory "phobius" into the bin directory of this script.
 
 ##### WolfPsort 0.2 #####
 
