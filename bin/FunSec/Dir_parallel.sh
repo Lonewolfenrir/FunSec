@@ -22,7 +22,7 @@ set -euo pipefail
 
 # Trap
 
-trap 'find "$OUTPUT"/FunSec_Output -empty -delete ; find ./ -maxdepth 1 -type d -name "TMHMM_*" -exec rm -rf {} \; ; find ./ -type d -name "Headers" -exec rm -rf {} +' SIGHUP SIGINT SIGTERM SIGQUIT ERR EXIT
+trap 'find "$OUTPUT"/FunSec_Output -empty -delete ; find ./ -maxdepth 1 -type d -name "TMHMM_*" -exec rm -rf {} \; ; find "$OUTPUT"/FunSec_Output -type d -name "Headers" -exec rm -rf {} +' SIGHUP SIGINT SIGTERM SIGQUIT ERR EXIT
 
 # Citation 
 
@@ -178,7 +178,6 @@ else
 	if [ "$(find "$OUTPUT"/FunSec_Output/Final/Headers -maxdepth 1 -type f -empty | wc -l)" -eq "$(find "$OUTPUT"/FunSec_Output/Final/Headers -maxdepth 1 -type f | wc -l)" ]
 	then 
 		echo -e "No proteins were predicted to be secreted. Existing..."
-		rm -rf "$OUTPUT"/FunSec_Output/WolfPsort_ProtComp/Headers
 		citation
 		exit 1
 	else
