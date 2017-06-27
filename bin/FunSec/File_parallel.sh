@@ -127,7 +127,7 @@ echo -e "\nFinished. (Runtime - $SECONDS seconds)"
 
 echo -e "\nRunning ProtComp 9.0...\n"
 mkdir -p "$OUTPUT"/FunSec_Output/ProtComp/Log
-parallel -j "$PARALLEL_JOBS" --noswap --load 80% --no-notice --pipepart -a "$OUTPUT"/FunSec_Output/WolfPsort/"$FILE_NAME" --recstart ">" ""$SCRIPT_DIR"/bin/lin/pc_fm "$OUTPUT"/FunSec_Output/SignalP_TMHMM_Phobius/"$FILE_NAME" -NODB -NOOL" | \
+"$SCRIPT_DIR"/bin/lin/pc_fm "$OUTPUT"/FunSec_Output/SignalP_TMHMM_Phobius/"$FILE_NAME" -NODB -NOOL | \
 tee -a "$OUTPUT"/FunSec_Output/ProtComp/Log/ProtComp.log | \
 awk 'BEGIN {RS="Seq name: "} /Integral Prediction of protein location: Membrane bound Extracellular/ || /Integral Prediction of protein location: Extracellular/ {print $1}' | \
 sed 's/,$//g' | \
