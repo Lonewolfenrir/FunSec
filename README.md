@@ -2,9 +2,9 @@
 
 ## Description ##
 
-This script was designed to automate the prediction of fungal secreted proteins from single or multiple FASTA files using a complex pipeline that contains programs for the prediction of signal peptides, trans-membrane regions, subcellular localization and endoplasmic reticulum targeting motifs. It can also be used to predict complete fungal secretomes.
+This script was designed to automate the prediction of fungal secreted proteins from single or multiple FASTA files, using a complex pipeline that contains programs for the prediction of signal peptides, trans-membrane regions, subcellular localization and endoplasmic reticulum targeting motifs. It can also be used to predict complete fungal secretomes.
 
-To predict signal peptides and trans-membrane regions we used two different methods and only the proteins that were predicted by both methods were selected for further analysis. The first method uses SignalP 4.1 and TMHMM 2.0 to predict signal peptides and trans-membrane regions respectively. The second method uses Phobius 1.01 which predicts both signal peptides and trans-membrane regions. By using two methods that rely in different approaches for their predictions we were able to reduce the rate of false positives. The subcellular localization prediction was made using two predictors, WolfPsort 0.2 and ProtComp 9.0 and again only the common proteins were selected. Finally, Ps-scan 1.86 was used with the profile of the Prosite motif entry, PS00014, to predict endoplasmic reticulum proteins.
+To predict signal peptides and trans-membrane regions we used two different methods and only the proteins that were predicted by both methods were selected for further analysis. The first method uses SignalP 4.1 and TMHMM 2.0 to predict signal peptides and trans-membrane regions respectively. The second method uses Phobius 1.01 which predicts both signal peptides and trans-membrane regions. By using two methods that rely in different approaches for their predictions we were able to reduce the rate of false positives. The subcellular localization prediction was made using two predictors, WolfPsort 0.2 and ProtComp 9.0 and again only the common proteins were selected. Finally, Ps-scan 1.86 was used with the profile of the Prosite motif entry, PS00014, to predict endoplasmic reticulum proteins. 
 
 ## Requirements ##
 
@@ -22,7 +22,7 @@ This script only runs in **Linux**. The script needs the programs described abov
 
 ##### SignalP 4.1 #####
 
-First, to download SignalP 4.1 visit <http://www.cbs.dtu.dk/cgi-bin/nph-sw_request?signalp> and download the program for the Unix platform. You should receive a tar.gz file. To untar the file use the following command in your terminal:
+First, to download SignalP 4.1, visit <http://www.cbs.dtu.dk/cgi-bin/nph-sw_request?signalp> and download the program for the Unix platform. You should receive a tar.gz file. To untar the file use the following command in your terminal:
 
 ```
 tar -zxvf FILE.tar.gz
@@ -50,7 +50,7 @@ To download Phobius 1.01 visit <http://software.sbc.su.se/cgi-bin/request.cgi?pr
 tar -zxvf FILE.tar.gz
 ```
 
-This will create a directory called tmp, inside it there is two more directories, with one of them named phobius. You must move the directory "phobius" into the bin directory of this script.
+This will create a directory called tmp, inside it there are two more directories, one of them named phobius. You must move the directory "phobius" into the bin directory of this script.
 
 ##### WolfPsort 0.2 #####
 
@@ -96,7 +96,7 @@ This will create a directory called ps_scan. You must move this directory into t
 
 ##### GNU Parallel #####
 
-To use the option '-p' of the script, GNU Parallel must be installed. Using GNU Parallel speeds up the pipeline by executing the programs in parallel. This program should be in the repositories of your Linux system.
+To use the option '-p' of the script, GNU Parallel must be installed. Using GNU Parallel speeds up the pipeline by executing the programs in parallel. This program should be in the repositories of your Linux system. For more information visit <https://www.gnu.org/software/parallel/>.
 
 ## Usage ##
 
@@ -109,15 +109,15 @@ This script only works with FASTA format files.
 ## Options ##
 
 ```
--d,		Input directory (for multiple files).
--f,		Input file.
--o,		Output directory.
+-d DIR,		Input directory (for multiple files).
+-f FILE,	Input file.
+-o OUTPUT,	Output directory.
+-w N,		Threshold number for the program WolfPsort 0.2. N must be in the range 1-30, the default value is 17.
+-p N,		Runs the script in parallel with N jobs, which makes it faster. GNU Parallel must be installed. When in doubt use -p 100%.
 -h,		Displays this message.
--w,		Threshold number for the program WolfPsort 0.2. Must be in the range 1-30. The default value is 17.
--p,		Runs the script in parallel, which makes it faster. GNU Parallel must be installed.
 -v,		Displays version.
 
-The options -d or -f and -o and their respective arguments must be specified. 
+The options -d or -f and -o and their respective arguments must be specified.
 ```
 
 ## Citation ##

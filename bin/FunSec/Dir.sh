@@ -43,7 +43,7 @@ do
 done
 if [ "$(find "$OUTPUT"/FunSec_Output/SignalP -maxdepth 1 -type f -empty | wc -l)" -eq "$(find "$OUTPUT"/FunSec_Output/SignalP -maxdepth 1 -type f | wc -l)" ]
 then 
-	echo -e "No proteins were predicted with a signal peptide. Existing..."
+	echo -e "No proteins were predicted with a signal peptide. Exiting..."
 	citation 
 	exit 1
 fi
@@ -64,7 +64,7 @@ done
 find ./ -maxdepth 1 -type d -name "TMHMM_*" -exec rm -rf {} \;
 if [ "$(find "$OUTPUT"/FunSec_Output/TMHMM -maxdepth 1 -type f -empty | wc -l)" -eq "$(find "$OUTPUT"/FunSec_Output/TMHMM -maxdepth 1 -type f | wc -l)" ]
 then 
-	echo -e "No proteins were predicted without trans-membrane regions. Existing..."
+	echo -e "No proteins were predicted without trans-membrane regions. Exiting..."
 	citation
 	exit 1
 fi
@@ -84,7 +84,7 @@ do
 done 
 if [ "$(find "$OUTPUT"/FunSec_Output/Phobius -maxdepth 1 -type f -empty | wc -l)" -eq "$(find "$OUTPUT"/FunSec_Output/Phobius -maxdepth 1 -type f | wc -l)" ]
 then 
-	echo -e "No proteins were predicted without trans-membrane regions or with signal peptides. Existing..."
+	echo -e "No proteins were predicted without trans-membrane regions or with signal peptides. Exiting..."
 	citation 
 	exit 1
 fi
@@ -101,7 +101,7 @@ do
 done
 if [ "$(find "$OUTPUT"/FunSec_Output/SignalP_TMHMM_Phobius/Headers -maxdepth 1 -type f -empty | wc -l)" -eq "$(find "$OUTPUT"/FunSec_Output/SignalP_TMHMM_Phobius/Headers -maxdepth 1 -type f | wc -l)" ]
 then 
-	echo -e "No common proteins were found. Existing..."
+	echo -e "No common proteins were found. Exiting..."
 	citation
 	exit 1
 else
@@ -132,7 +132,7 @@ do
 done
 if [ "$(find "$OUTPUT"/FunSec_Output/WolfPsort -maxdepth 1 -type f -empty | wc -l)" -eq "$(find "$OUTPUT"/FunSec_Output/WolfPsort -maxdepth 1 -type f | wc -l)" ]
 then 
-	echo -e "No proteins were predicted to be secreted. Existing..."
+	echo -e "No proteins were predicted to be secreted. Exiting..."
 	citation
 	exit 1
 fi
@@ -153,7 +153,7 @@ do
 done
 if [ "$(find "$OUTPUT"/FunSec_Output/ProtComp -maxdepth 1 -type f -empty | wc -l)" -eq "$(find "$OUTPUT"/FunSec_Output/ProtComp -maxdepth 1 -type f | wc -l)" ]
 then 
-	echo -e "No proteins were predicted to be secreted. Existing..."
+	echo -e "No proteins were predicted to be secreted. Exiting..."
 	citation
 	exit 1
 fi
@@ -170,7 +170,7 @@ do
 done
 if [ "$(find "$OUTPUT"/FunSec_Output/WolfPsort_ProtComp/Headers -maxdepth 1 -type f -empty | wc -l)" -eq "$(find "$OUTPUT"/FunSec_Output/WolfPsort_ProtComp/Headers -maxdepth 1 -type f | wc -l)" ]
 then 
-	echo -e "No common proteins were found. Existing..."
+	echo -e "No common proteins were found. Exiting..."
 	citation
 	exit 1
 else
@@ -210,7 +210,7 @@ else
 	done
 	if [ "$(find "$OUTPUT"/FunSec_Output/Final/Headers -maxdepth 1 -type f -empty | wc -l)" -eq "$(find "$OUTPUT"/FunSec_Output/Final/Headers -maxdepth 1 -type f | wc -l)" ]
 	then 
-		echo -e "No proteins were predicted to be secreted. Existing..."
+		echo -e "No proteins were predicted to be secreted. Exiting..."
 		citation
 		exit 1
 	else

@@ -38,6 +38,7 @@ export INPUT_FILE=""
 export FILE_NAME=""
 export OUTPUT=""
 export THRESHOLD_WOLFPSORT=0
+export PARALLEL_JOBS=0
 FLAG_INPUT_DIR=0
 FLAG_INPUT_FILE=0
 FLAG_OUTPUT=0
@@ -53,7 +54,7 @@ then
 	sed -i "13s|.*|    \$ENV{SIGNALP} = '$SCRIPT_DIR/bin/signalp-4.1';|" "$SCRIPT_DIR"/bin/signalp-4.1/signalp 
 	sed -i "20s|.*|my \$MAX_ALLOWED_ENTRIES=100000;|" "$SCRIPT_DIR"/bin/signalp-4.1/signalp
 else
-	echo -e "Could not find the file signalp. Existing..."
+	echo -e "Could not find the file signalp of the program SignalP. Exiting..."
 	exit 1
 fi
 
@@ -62,13 +63,13 @@ then
 	sed -i "1s|.*|#!$(which perl)|" "$SCRIPT_DIR"/bin/tmhmm-2.0c/bin/tmhmm
 	sed -i "1s|.*|#!$(which perl)|" "$SCRIPT_DIR"/bin/tmhmm-2.0c/bin/tmhmmformat.pl
 else
-	echo -e "Could not find the files tmhmm and tmhmmformat.pl. Existing..."
+	echo -e "Could not find the files tmhmm and tmhmmformat.pl of the program TMHMM. Exiting..."
 	exit 1
 fi
 
 # Command options and arguments parser
 
-while getopts ":d:f:o:w:pvh" OPT
+while getopts ":d:f:o:w:p:vh" OPT
 do
 	case "$OPT" in
 		d)
@@ -88,6 +89,7 @@ do
 			FLAG_WOLFPSORT=1
 			;;
 		p)
+			PARALLEL_JOBS="$OPTARG"
 			FLAG_PARALLEL=1
 			;;
 		h)
@@ -110,8 +112,8 @@ done
 # Version
 
 version() {
-	echo -e "Version: 2.1
-Last Updated: 27-04-17."
+	echo -e "Version: 2.2
+Last Updated: 27-06-17."
 }
 
 # Help 
@@ -123,12 +125,12 @@ help_text() {
 
 Options:
 
-		-d,		Input directory (for multiple files).
-		-f,		Input file.
-		-o,		Output directory.
+		-d DIR,		Input directory (for multiple files).
+		-f FILE,	Input file.
+		-o OUTPUT,	Output directory.
+		-w N,		Threshold number for the program WolfPsort 0.2. N must be in the range 1-30, the default value is 17.
+		-p N,		Runs the script in parallel with N jobs, which makes it faster. GNU Parallel must be installed. When in doubt use -p 100%.
 		-h,		Displays this message.
-		-w,		Threshold number for the program WolfPsort 0.2. Must be in the range 1-30, the default value is 17.
-		-p,		Runs the script in parallel, which makes it faster. GNU Parallel must be installed.
 		-v,		Displays version.
 
         The options -d or -f and -o and their respective arguments must be specified. For more information read the README.md file.
@@ -193,7 +195,7 @@ output_check() {
 				rm -rf "$OUTPUT"/FunSec_Output && \
 				mkdir "$OUTPUT"/FunSec_Output
 			else
-				echo -e "\nExisting..."
+				echo -e "\nExiting..."
 				exit 0
 			fi
 		else

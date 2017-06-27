@@ -40,7 +40,7 @@ awk '{if ($10 == "Y") print $1}' | \
 sort 
 if [ ! -s "$OUTPUT"/FunSec_Output/SignalP/"$FILE_NAME" ]
 then 
-	echo -e "No proteins were predicted with a signal peptide. Existing..."
+	echo -e "No proteins were predicted with a signal peptide. Exiting..."
 	citation 
 	exit 1
 fi
@@ -51,7 +51,7 @@ echo -e "\nFinished. (Runtime - $SECONDS seconds)"
 echo -e "\nRunning TMHMM 2.0 with SignalP 4.1 mature sequences...\n"
 mkdir -p "$OUTPUT"/FunSec_Output/TMHMM/Log
 cat "$OUTPUT"/FunSec_Output/SignalP/"$FILE_NAME" | \
-parallel --no-notice --pipe --recstart ">" ""$SCRIPT_DIR"/bin/tmhmm-2.0c/bin/tmhmm -short" | \
+parallel -j "$PARALLEL_JOBS" --noswap --load 80% --no-notice --pipe --recstart ">" ""$SCRIPT_DIR"/bin/tmhmm-2.0c/bin/tmhmm -short" | \
 tee -a "$OUTPUT"/FunSec_Output/TMHMM/Log/TMHMM.log | \
 awk '{if ($5=="PredHel=0") print $1}' | \
 sort | \
@@ -59,7 +59,7 @@ tee "$OUTPUT"/FunSec_Output/TMHMM/"$FILE_NAME"
 find ./ -maxdepth 1 -type d -name "TMHMM_*" -exec rm -rf {} \;
 if [ ! -s "$OUTPUT"/FunSec_Output/TMHMM/"$FILE_NAME" ]
 then 
-	echo -e "No proteins were predicted without trans-membrane regions. Existing..."
+	echo -e "No proteins were predicted without trans-membrane regions. Exiting..."
 	citation
 	exit 1
 fi
@@ -70,14 +70,14 @@ echo -e "\nFinished. (Runtime - $SECONDS seconds)"
 echo -e "\nRunning Phobius 1.01...\n"
 mkdir -p "$OUTPUT"/FunSec_Output/Phobius/Log
 cat "$INPUT_FILE" | \
-parallel --no-notice --pipe --recstart ">" ""$SCRIPT_DIR"/bin/phobius/phobius.pl -short 2> /dev/null" | \
+parallel -j "$PARALLEL_JOBS" --noswap --load 80% --no-notice --pipe --recstart ">" ""$SCRIPT_DIR"/bin/phobius/phobius.pl -short 2> /dev/null" | \
 tee -a "$OUTPUT"/FunSec_Output/Phobius/Log/Phobius.log | \
 awk '{if ($2 == "0" && $3 =="Y") print $1}' | \
 sort | \
 tee "$OUTPUT"/FunSec_Output/Phobius/"$FILE_NAME"
 if [ ! -s "$OUTPUT"/FunSec_Output/Phobius/"$FILE_NAME" ]
 then 
-	echo -e "No proteins were predicted without trans-membrane regions or with signal peptides. Existing..."
+	echo -e "No proteins were predicted without trans-membrane regions or with signal peptides. Exiting..."
 	citation 
 	exit 1
 fi
@@ -91,7 +91,7 @@ comm -12 "$OUTPUT"/FunSec_Output/Phobius/"$FILE_NAME" "$OUTPUT"/FunSec_Output/TM
 tee "$OUTPUT"/FunSec_Output/SignalP_TMHMM_Phobius/Headers/"$FILE_NAME"
 if [ ! -s "$OUTPUT"/FunSec_Output/SignalP_TMHMM_Phobius/Headers/"$FILE_NAME" ]
 then 
-	echo -e "No common proteins were found. Existing..."
+	echo -e "No common proteins were found. Exiting..."
 	citation
 	exit 1
 else	
@@ -109,7 +109,7 @@ echo -e "\nFinished. (Runtime - $SECONDS seconds)"
 echo -e "\nRunning WolfPsort 0.2...\n"
 mkdir -p "$OUTPUT"/FunSec_Output/WolfPsort/Log
 cat "$OUTPUT"/FunSec_Output/SignalP_TMHMM_Phobius/"$FILE_NAME" | \
-parallel --no-notice --pipe --recstart ">" ""$SCRIPT_DIR"/bin/WoLFPSort-master/bin/runWolfPsortSummary fungi" | \
+parallel -j "$PARALLEL_JOBS" --noswap --load 80% --no-notice --pipe --recstart ">" ""$SCRIPT_DIR"/bin/WoLFPSort-master/bin/runWolfPsortSummary fungi" | \
 tee -a "$OUTPUT"/FunSec_Output/WolfPsort/Log/WolfPsort.log | \
 grep -E -o ".* extr [0-9]{,2}" | \
 awk -v w="$THRESHOLD_WOLFPSORT" 'BEGIN {FS=" "} {if ($2 == "extr" && $3 > w) print $1}' | \
@@ -117,7 +117,7 @@ sort | \
 tee "$OUTPUT"/FunSec_Output/WolfPsort/"$FILE_NAME"
 if [ ! -s "$OUTPUT"/FunSec_Output/WolfPsort/"$FILE_NAME" ]
 then 
-	echo -e "No proteins were predicted to be secreted. Existing..."
+	echo -e "No proteins were predicted to be secreted. Exiting..."
 	citation
 	exit 1
 fi
@@ -127,7 +127,7 @@ echo -e "\nFinished. (Runtime - $SECONDS seconds)"
 
 echo -e "\nRunning ProtComp 9.0...\n"
 mkdir -p "$OUTPUT"/FunSec_Output/ProtComp/Log
-parallel --no-notice --pipepart -a "$OUTPUT"/FunSec_Output/WolfPsort/"$FILE_NAME" --recstart ">" ""$SCRIPT_DIR"/bin/lin/pc_fm "$OUTPUT"/FunSec_Output/SignalP_TMHMM_Phobius/"$FILE_NAME" -NODB -NOOL" | \
+parallel -j "$PARALLEL_JOBS" --noswap --load 80% --no-notice --pipepart -a "$OUTPUT"/FunSec_Output/WolfPsort/"$FILE_NAME" --recstart ">" ""$SCRIPT_DIR"/bin/lin/pc_fm "$OUTPUT"/FunSec_Output/SignalP_TMHMM_Phobius/"$FILE_NAME" -NODB -NOOL" | \
 tee -a "$OUTPUT"/FunSec_Output/ProtComp/Log/ProtComp.log | \
 awk 'BEGIN {RS="Seq name: "} /Integral Prediction of protein location: Membrane bound Extracellular/ || /Integral Prediction of protein location: Extracellular/ {print $1}' | \
 sed 's/,$//g' | \
@@ -135,7 +135,7 @@ sort | \
 tee "$OUTPUT"/FunSec_Output/ProtComp/"$FILE_NAME"
 if [ ! -s "$OUTPUT"/FunSec_Output/ProtComp/"$FILE_NAME" ]
 then 
-	echo -e "No proteins were predicted to be secreted. Existing..."
+	echo -e "No proteins were predicted to be secreted. Exiting..."
 	citation
 	exit 1
 fi
@@ -149,7 +149,7 @@ comm -12 "$OUTPUT"/FunSec_Output/WolfPsort/"$FILE_NAME" "$OUTPUT"/FunSec_Output/
 tee "$OUTPUT"/FunSec_Output/WolfPsort_ProtComp/Headers/"$FILE_NAME"
 if [ ! -s "$OUTPUT"/FunSec_Output/WolfPsort_ProtComp/Headers/"$FILE_NAME" ]
 then 
-	echo -e "No common proteins were found. Existing..."
+	echo -e "No common proteins were found. Exiting..."
 	citation
 	exit 1
 else
@@ -166,7 +166,7 @@ echo -e "\nFinished. (Runtime - $SECONDS seconds)"
 echo -e "\nRunning Ps-scan 1.86...\n"
 mkdir -p "$OUTPUT"/FunSec_Output/Ps-scan/Log "$OUTPUT"/FunSec_Output/Final
 cat "$OUTPUT"/FunSec_Output/WolfPsort_ProtComp/"$FILE_NAME" | \
-parallel --no-notice --pipe --recstart ">" ""$SCRIPT_DIR"/bin/ps_scan/ps_scan.pl -p \"[KRHQSA]-[DENQ]-E-L>\"" | \
+parallel -j "$PARALLEL_JOBS" --noswap --load 80% --no-notice --pipe --recstart ">" ""$SCRIPT_DIR"/bin/ps_scan/ps_scan.pl -p \"[KRHQSA]-[DENQ]-E-L>\"" | \
 tee -a "$OUTPUT"/FunSec_Output/Ps-scan/Log/Ps-scan.log | \
 awk 'BEGIN{RS=">"} {print $1}' | \
 sed '/^$/d' | \
@@ -181,7 +181,7 @@ else
 	comm -13 "$OUTPUT"/FunSec_Output/Ps-scan/"$FILE_NAME" "$OUTPUT"/FunSec_Output/WolfPsort_ProtComp/Headers/"$FILE_NAME" > "$OUTPUT"/FunSec_Output/Final/Headers/"$FILE_NAME"
 	if [ ! -s "$OUTPUT"/FunSec_Output/Final/Headers/"$FILE_NAME" ]
 	then
-		echo -e "No proteins were predicted to be secreted. Existing..."
+		echo -e "No proteins were predicted to be secreted. Exiting..."
 		citation
 		exit 1
 	else

@@ -40,7 +40,7 @@ awk '{if ($10 == "Y") print $1}' | \
 sort
 if [ ! -s "$OUTPUT"/FunSec_Output/SignalP/"$FILE_NAME" ]
 then 
-	echo -e "No proteins were predicted with a signal peptide. Existing..."
+	echo -e "No proteins were predicted with a signal peptide. Exiting..."
 	citation 
 	exit 1
 fi
@@ -58,7 +58,7 @@ tee "$OUTPUT"/FunSec_Output/TMHMM/"$FILE_NAME"
 find ./ -maxdepth 1 -type d -name "TMHMM_*" -exec rm -rf {} \;
 if [ ! -s "$OUTPUT"/FunSec_Output/TMHMM/"$FILE_NAME" ]
 then 
-	echo -e "No proteins were predicted without trans-membrane regions. Existing..."
+	echo -e "No proteins were predicted without trans-membrane regions. Exiting..."
 	citation
 	exit 1
 fi
@@ -75,7 +75,7 @@ sort | \
 tee "$OUTPUT"/FunSec_Output/Phobius/"$FILE_NAME"
 if [ ! -s "$OUTPUT"/FunSec_Output/Phobius/"$FILE_NAME" ]
 then 
-	echo -e "No proteins were predicted without trans-membrane regions or with signal peptides. Existing..."
+	echo -e "No proteins were predicted without trans-membrane regions or with signal peptides. Exiting..."
 	citation 
 	exit 1
 fi
@@ -89,7 +89,7 @@ comm -12 "$OUTPUT"/FunSec_Output/Phobius/"$FILE_NAME" "$OUTPUT"/FunSec_Output/TM
 tee "$OUTPUT"/FunSec_Output/SignalP_TMHMM_Phobius/Headers/"$FILE_NAME"
 if [ ! -s "$OUTPUT"/FunSec_Output/SignalP_TMHMM_Phobius/Headers/"$FILE_NAME" ]
 then 
-	echo -e "No common proteins were found. Existing..."
+	echo -e "No common proteins were found. Exiting..."
 	citation
 	exit 1
 else	
@@ -114,7 +114,7 @@ sort | \
 tee "$OUTPUT"/FunSec_Output/WolfPsort/"$FILE_NAME"
 if [ ! -s "$OUTPUT"/FunSec_Output/WolfPsort/"$FILE_NAME" ]
 then 
-	echo -e "No proteins were predicted to be secreted. Existing..."
+	echo -e "No proteins were predicted to be secreted. Exiting..."
 	citation
 	exit 1
 fi
@@ -132,7 +132,7 @@ sort | \
 tee "$OUTPUT"/FunSec_Output/ProtComp/"$FILE_NAME"
 if [ ! -s "$OUTPUT"/FunSec_Output/ProtComp/"$FILE_NAME" ]
 then 
-	echo -e "No proteins were predicted to be secreted. Existing..."
+	echo -e "No proteins were predicted to be secreted. Exiting..."
 	citation
 	exit 1
 fi
@@ -146,7 +146,7 @@ comm -12 "$OUTPUT"/FunSec_Output/WolfPsort/"$FILE_NAME" "$OUTPUT"/FunSec_Output/
 tee "$OUTPUT"/FunSec_Output/WolfPsort_ProtComp/Headers/"$FILE_NAME"
 if [ ! -s "$OUTPUT"/FunSec_Output/WolfPsort_ProtComp/Headers/"$FILE_NAME" ]
 then 
-	echo -e "No common proteins were found. Existing..."
+	echo -e "No common proteins were found. Exiting..."
 	citation
 	exit 1
 else
@@ -177,7 +177,7 @@ else
 	comm -13 "$OUTPUT"/FunSec_Output/Ps-scan/"$FILE_NAME" "$OUTPUT"/FunSec_Output/WolfPsort_ProtComp/Headers/"$FILE_NAME" > "$OUTPUT"/FunSec_Output/Final/Headers/"$FILE_NAME"
 	if [ ! -s "$OUTPUT"/FunSec_Output/Final/Headers/"$FILE_NAME" ]
 	then
-		echo -e "No proteins were predicted to be secreted. Existing..."
+		echo -e "No proteins were predicted to be secreted. Exiting..."
 		citation
 		exit 1
 	else
