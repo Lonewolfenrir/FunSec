@@ -37,7 +37,7 @@ SIGNALP_AWK='{if ($10 == "Y") print $1}'
 echo -e "\nRunning SignalP 4.1...\n"
 mkdir -p "$OUTPUT"/FunSec_Output/SignalP/Log
 find "$INPUT_DIR" -maxdepth 1 -type f | \
-	parallel -j "$PARALLEL_JOBS" --noswap --load 80% --no-notice ""$SCRIPT_DIR"/bin/signalp-4.1/signalp -m "$OUTPUT"/FunSec_Output/SignalP/{/} {} 2> /dev/null | tee -a "$OUTPUT"/FunSec_Output/SignalP/Log/SignalP.log | awk '$SIGNALP_AWK' | sort"
+	parallel -j "$PARALLEL_JOBS" --noswap --load 80% --no-notice ""$SCRIPT_DIR"/bin/signalp-4.1/signalp -c "$SIGNALP_CUT" -M "$SIGNALP_MINIMAL" -s "$SIGNALP_METHOD" -u "$SIGNALP_CUTOFF_NOTM" -U "$SIGNALP_CUTOFF_TM" -m "$OUTPUT"/FunSec_Output/SignalP/{/} {} 2> /dev/null | tee -a "$OUTPUT"/FunSec_Output/SignalP/Log/SignalP.log | awk '$SIGNALP_AWK' | sort"
 if [ "$(find "$OUTPUT"/FunSec_Output/SignalP -maxdepth 1 -type f -empty | wc -l)" -eq "$(find "$OUTPUT"/FunSec_Output/SignalP -maxdepth 1 -type f | wc -l)" ]
 then 
 	echo -e "No proteins were predicted with a signal peptide. Exiting..."
@@ -73,7 +73,7 @@ find "$INPUT_DIR" -maxdepth 1 -type f | \
 	parallel -j "$PARALLEL_JOBS" --noswap --load 80% --no-notice ""$SCRIPT_DIR"/bin/phobius/phobius.pl -short < {} 2> /dev/null | tee -a "$OUTPUT"/FunSec_Output/Phobius/Log/Phobius.log | awk '$PHOBIUS_AWK' | sort | tee "$OUTPUT"/FunSec_Output/Phobius/{/}"
 if [ "$(find "$OUTPUT"/FunSec_Output/Phobius -maxdepth 1 -type f -empty | wc -l)" -eq "$(find "$OUTPUT"/FunSec_Output/Phobius -maxdepth 1 -type f | wc -l)" ]
 then 
-	echo -e "No proteins were predicted without trans-membrane regions or with signal peptides. Exiting..."
+	echo -e "No proteins were predicted without trans-membrane regions or with a signal peptide. Exiting..."
 	citation 
 	exit 1
 fi

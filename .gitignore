@@ -6,3 +6,4 @@ bin/signalp-4.1/
 bin/tmhmm-2.0c/
 /test
 *.swp
+bin/FunSec/Fasta_Parser.py

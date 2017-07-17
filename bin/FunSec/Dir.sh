@@ -36,7 +36,7 @@ echo -e "\nRunning SignalP 4.1...\n"
 mkdir -p "$OUTPUT"/FunSec_Output/SignalP/Log
 find "$INPUT_DIR" -maxdepth 1 -type f -exec basename {} \; | while read -r i
 do
-	"$SCRIPT_DIR"/bin/signalp-4.1/signalp -m "$OUTPUT"/FunSec_Output/SignalP/"$i" "$INPUT_DIR"/"$i" 2> /dev/null | \
+	"$SCRIPT_DIR"/bin/signalp-4.1/signalp -c "$SIGNALP_CUT" -M "$SIGNALP_MINIMAL" -s "$SIGNALP_METHOD" -u "$SIGNALP_CUTOFF_NOTM" -U "$SIGNALP_CUTOFF_TM" -m "$OUTPUT"/FunSec_Output/SignalP/"$i" "$INPUT_DIR"/"$i" 2> /dev/null | \
 	tee -a "$OUTPUT"/FunSec_Output/SignalP/Log/SignalP.log | \
 	awk '{if ($10 == "Y") print $1}' | \
 	sort
@@ -84,7 +84,7 @@ do
 done 
 if [ "$(find "$OUTPUT"/FunSec_Output/Phobius -maxdepth 1 -type f -empty | wc -l)" -eq "$(find "$OUTPUT"/FunSec_Output/Phobius -maxdepth 1 -type f | wc -l)" ]
 then 
-	echo -e "No proteins were predicted without trans-membrane regions or with signal peptides. Exiting..."
+	echo -e "No proteins were predicted without trans-membrane regions or with a signal peptide. Exiting..."
 	citation 
 	exit 1
 fi

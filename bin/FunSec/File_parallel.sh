@@ -34,7 +34,7 @@ citation() {
 
 echo -e "\nRunning SignalP 4.1...\n"
 mkdir -p "$OUTPUT"/FunSec_Output/SignalP/Log
-"$SCRIPT_DIR"/bin/signalp-4.1/signalp -m "$OUTPUT"/FunSec_Output/SignalP/"$FILE_NAME" "$INPUT_FILE" 2> /dev/null | \
+"$SCRIPT_DIR"/bin/signalp-4.1/signalp -c "$SIGNALP_CUT" -M "$SIGNALP_MINIMAL" -s "$SIGNALP_METHOD" -u "$SIGNALP_CUTOFF_NOTM" -U "$SIGNALP_CUTOFF_TM" -m "$OUTPUT"/FunSec_Output/SignalP/"$FILE_NAME" "$INPUT_FILE" 2> /dev/null | \
 tee -a "$OUTPUT"/FunSec_Output/SignalP/Log/SignalP.log | \
 awk '{if ($10 == "Y") print $1}' | \
 sort 
@@ -77,7 +77,7 @@ sort | \
 tee "$OUTPUT"/FunSec_Output/Phobius/"$FILE_NAME"
 if [ ! -s "$OUTPUT"/FunSec_Output/Phobius/"$FILE_NAME" ]
 then 
-	echo -e "No proteins were predicted without trans-membrane regions or with signal peptides. Exiting..."
+	echo -e "No proteins were predicted without trans-membrane regions or with a signal peptide. Exiting..."
 	citation 
 	exit 1
 fi

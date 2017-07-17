@@ -109,15 +109,31 @@ This script only works with FASTA format files.
 ## Options ##
 
 ```
--d DIR,		Input directory (for multiple files).
--f FILE,	Input file.
--o OUTPUT,	Output directory.
--w N,		Threshold number for the program WolfPsort 0.2. N must be in the range 1-30, the default value is 17.
--p N,		Runs the script in parallel with N jobs, which makes it faster. GNU Parallel must be installed. When in doubt use -p 100%.
--h,		Displays this message.
--v,		Displays version.
+General Options:
 
-The options -d or -f and -o and their respective arguments must be specified.
+	-d DIR,		Input directory (for multiple files).
+	-f FILE,	Input file.
+	-o OUTPUT,	Output directory.
+	-p N,		Runs the script in parallel with N jobs. The number of jobs is the same as the number of CPU cores. Using "0" will run as many jobs in parallel as possible. When in doubt use "-p 100%". GNU Parallel must be installed.
+
+WolfPsort 0.2 Options:
+
+	-w N,		Threshold value for WolfPsort 0.2. N must be a integer in the range 1-30. The default value is "17".
+
+SignalP 4.1 Options:
+
+	-c N,		N-terminal truncation of input sequences. The value of "0" disables truncation. The default is 70 residues.
+	-m N,		Minimal predicted signal peptide length. The default is 10 residues.
+	-x N,		D-cutoff value for SignalP-TM networks. N must be in the range 0-1. To reproduce SignalP 3.0's sensitivity use "0.34". The default is "0.5".
+	-y N,		D-cutoff value for SignalP-noTM networks. N must be in the range 0-1. To reproduce SignalP 3.0's sensitivity use "0.34". The default is "0.45".
+	-n,		The SignalP-noTM neural networks are chosen.
+
+Miscellaneous:
+
+	-h,		Displays this message.
+	-v,		Displays version.
+
+The options -d or -f and -o and their respective arguments are mandatory, the rest of the options are optional. For more information read the README.md file.
 ```
 
 ## Citation ##
