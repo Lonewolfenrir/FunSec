@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
 
-# FunSec - Fungal Secreted Proteins (or Secretome) Predictor Pipeline.
-# Copyright (C) 2016 João Baptista <baptista.joao33@gmail.com>
+# FunSec - Fungal Secreted Proteins (or Secretome) Prediction Pipeline.
+# Copyright (C) 2019 João Baptista <baptista.joao33@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -22,184 +22,190 @@ set -euo pipefail
 
 # Trap
 
-trap 'find "$OUTPUT"/FunSec_Output -empty -delete ; find ./ -maxdepth 1 -type d -name "TMHMM_*" -exec rm -rf {} \; ; find "$OUTPUT"/FunSec_Output -type d -name "Headers" -exec rm -rf {} +' SIGHUP SIGINT SIGTERM SIGQUIT ERR EXIT
+trap 'find "$OUTPUT"/FunSec_Output -empty -delete ; find ./ -maxdepth 1 -type d -name "TMHMM_*" -exec rm -rf {} + ; find "$OUTPUT"/FunSec_Output/SignalP -type f -name "$FILE_NAME".fa -delete 2> /dev/null ; find "$OUTPUT"/FunSec_Output/SignalP_TMHMM_Phobius -type f -name "$FILE_NAME" -delete 2> /dev/null ; find "$OUTPUT"/FunSec_Output/WolfPsort_ProtComp_TargetP -type f -name pre_"$FILE_NAME" -delete 2> /dev/null ; find "$OUTPUT"/FunSec_Output/WolfPsort_ProtComp_TargetP -type f -name "$FILE_NAME" -delete 2> /dev/null ; find "$OUTPUT"/FunSec_Output/Final -type f -name "$FILE_NAME" -delete 2> /dev/null' SIGHUP SIGINT SIGTERM SIGQUIT ERR EXIT 
 
 # Citation 
 
 citation() {
-	echo -e "\nPlease cite this script as well as all the programs that are used in this script including GNU Parallel. Thank you!"   
+	echo -e "\nPlease cite FunSec as well as all the programs that are used in the pipeline including GNU Parallel. Thank you!"   
 }
 
 # SignalP 4.1  
 
 echo -e "\nRunning SignalP 4.1...\n"
-mkdir -p "$OUTPUT"/FunSec_Output/SignalP/Log
-"$SCRIPT_DIR"/bin/signalp-4.1/signalp -c "$SIGNALP_CUT" -M "$SIGNALP_MINIMAL" -s "$SIGNALP_METHOD" -u "$SIGNALP_CUTOFF_NOTM" -U "$SIGNALP_CUTOFF_TM" -m "$OUTPUT"/FunSec_Output/SignalP/"$FILE_NAME" "$INPUT_FILE" 2> /dev/null | \
-tee -a "$OUTPUT"/FunSec_Output/SignalP/Log/SignalP.log | \
+mkdir "$OUTPUT"/FunSec_Output/SignalP
+"$SCRIPT_DIR"/bin/signalp-4.1/signalp -c "$SIGNALP_CUT" -M "$SIGNALP_MINIMAL" -s "$SIGNALP_METHOD" -u "$SIGNALP_CUTOFF_NOTM" -U "$SIGNALP_CUTOFF_TM" -m "$OUTPUT"/FunSec_Output/SignalP/"$FILE_NAME".fa "$INPUT_FILE" 2> /dev/null | \
+tee "$OUTPUT"/FunSec_Output/SignalP/SignalP.log | \
 awk '{if ($10 == "Y") print $1}' | \
-sort 
-if [ ! -s "$OUTPUT"/FunSec_Output/SignalP/"$FILE_NAME" ]
-then 
+sort | \
+tee "$OUTPUT"/FunSec_Output/SignalP/"$FILE_NAME"
+if [ ! -s "$OUTPUT"/FunSec_Output/SignalP/"$FILE_NAME" ]; then
 	echo -e "No proteins were predicted with a signal peptide. Exiting..."
 	citation 
-	exit 1
+	exit 0
 fi
 echo -e "\nFinished. (Runtime - $SECONDS seconds)"
 
 # TMHMM 2.0c
 
 echo -e "\nRunning TMHMM 2.0 with SignalP 4.1 mature sequences...\n"
-mkdir -p "$OUTPUT"/FunSec_Output/TMHMM/Log
-cat "$OUTPUT"/FunSec_Output/SignalP/"$FILE_NAME" | \
+mkdir "$OUTPUT"/FunSec_Output/TMHMM
+cat "$OUTPUT"/FunSec_Output/SignalP/"$FILE_NAME".fa | \
 parallel -j "$PARALLEL_JOBS" --noswap --load 80% --no-notice --pipe --recstart ">" ""$SCRIPT_DIR"/bin/tmhmm-2.0c/bin/tmhmm -short" | \
-tee -a "$OUTPUT"/FunSec_Output/TMHMM/Log/TMHMM.log | \
+tee "$OUTPUT"/FunSec_Output/TMHMM/TMHMM.log | \
 awk '{if ($5=="PredHel=0") print $1}' | \
 sort | \
 tee "$OUTPUT"/FunSec_Output/TMHMM/"$FILE_NAME"
-find ./ -maxdepth 1 -type d -name "TMHMM_*" -exec rm -rf {} \;
-if [ ! -s "$OUTPUT"/FunSec_Output/TMHMM/"$FILE_NAME" ]
-then 
+find ./ -maxdepth 1 -type d -name "TMHMM_*" -exec rm -rf {} +
+find "$OUTPUT"/FunSec_Output/SignalP -type f -name "$FILE_NAME".fa -delete
+if [ ! -s "$OUTPUT"/FunSec_Output/TMHMM/"$FILE_NAME" ]; then
 	echo -e "No proteins were predicted without trans-membrane regions. Exiting..."
 	citation
-	exit 1
+	exit 0
 fi
 echo -e "\nFinished. (Runtime - $SECONDS seconds)"
 
 # Phobius 1.01
 
 echo -e "\nRunning Phobius 1.01...\n"
-mkdir -p "$OUTPUT"/FunSec_Output/Phobius/Log
+mkdir "$OUTPUT"/FunSec_Output/Phobius
 cat "$INPUT_FILE" | \
 parallel -j "$PARALLEL_JOBS" --noswap --load 80% --no-notice --pipe --recstart ">" ""$SCRIPT_DIR"/bin/phobius/phobius.pl -short 2> /dev/null" | \
-tee -a "$OUTPUT"/FunSec_Output/Phobius/Log/Phobius.log | \
+tee "$OUTPUT"/FunSec_Output/Phobius/Phobius.log | \
 awk '{if ($2 == "0" && $3 =="Y") print $1}' | \
 sort | \
 tee "$OUTPUT"/FunSec_Output/Phobius/"$FILE_NAME"
-if [ ! -s "$OUTPUT"/FunSec_Output/Phobius/"$FILE_NAME" ]
-then 
+if [ ! -s "$OUTPUT"/FunSec_Output/Phobius/"$FILE_NAME" ]; then
 	echo -e "No proteins were predicted without trans-membrane regions or with a signal peptide. Exiting..."
 	citation 
-	exit 1
+	exit 0
 fi
 echo -e "\nFinished. (Runtime - $SECONDS seconds)"
 
 # SignalP 4.1 + TMHMM 2.0c and Phobius 1.01
 
-echo -e "\nSelecting the common sequences found by SignalP 4.1 + TMHMM 2.0 and Phobius 1.01...\n"
-mkdir -p "$OUTPUT"/FunSec_Output/SignalP_TMHMM_Phobius/Headers
+echo -e "\nSelecting the common sequences found by SignalP 4.1 plus TMHMM 2.0 and Phobius 1.01...\n"
+mkdir "$OUTPUT"/FunSec_Output/SignalP_TMHMM_Phobius
 comm -12 "$OUTPUT"/FunSec_Output/Phobius/"$FILE_NAME" "$OUTPUT"/FunSec_Output/TMHMM/"$FILE_NAME" | \
-tee "$OUTPUT"/FunSec_Output/SignalP_TMHMM_Phobius/Headers/"$FILE_NAME"
-if [ ! -s "$OUTPUT"/FunSec_Output/SignalP_TMHMM_Phobius/Headers/"$FILE_NAME" ]
-then 
+tee "$OUTPUT"/FunSec_Output/SignalP_TMHMM_Phobius/"$FILE_NAME"
+if [ ! -s "$OUTPUT"/FunSec_Output/SignalP_TMHMM_Phobius/"$FILE_NAME" ]; then
 	echo -e "No common proteins were found. Exiting..."
 	citation
-	exit 1
+	exit 0
 else	
-	while read -r f
-	do
+	while read -r f; do
 		awk -v f="$f" 'BEGIN {RS=">"} {if ($1 == f) print RS$0}' "$INPUT_FILE" | \
-		sed '/^$/d' >> "$OUTPUT"/FunSec_Output/SignalP_TMHMM_Phobius/"$FILE_NAME" 
-	done < "$OUTPUT"/FunSec_Output/SignalP_TMHMM_Phobius/Headers/"$FILE_NAME"
-	rm -rf "$OUTPUT"/FunSec_Output/SignalP_TMHMM_Phobius/Headers
+		sed '/^$/d' >> "$OUTPUT"/FunSec_Output/SignalP_TMHMM_Phobius/"$FILE_NAME".fa 
+	done < "$OUTPUT"/FunSec_Output/SignalP_TMHMM_Phobius/"$FILE_NAME"
+	find "$OUTPUT"/FunSec_Output/SignalP_TMHMM_Phobius -type f -name "$FILE_NAME" -delete
 fi
 echo -e "\nFinished. (Runtime - $SECONDS seconds)"
 
 # WolfPsort 0.2
 
 echo -e "\nRunning WolfPsort 0.2...\n"
-mkdir -p "$OUTPUT"/FunSec_Output/WolfPsort/Log
-cat "$OUTPUT"/FunSec_Output/SignalP_TMHMM_Phobius/"$FILE_NAME" | \
+mkdir "$OUTPUT"/FunSec_Output/WolfPsort
+cat "$OUTPUT"/FunSec_Output/SignalP_TMHMM_Phobius/"$FILE_NAME".fa | \
 parallel -j "$PARALLEL_JOBS" --noswap --load 80% --no-notice --pipe --recstart ">" ""$SCRIPT_DIR"/bin/WoLFPSort-master/bin/runWolfPsortSummary fungi" | \
-tee -a "$OUTPUT"/FunSec_Output/WolfPsort/Log/WolfPsort.log | \
+tee "$OUTPUT"/FunSec_Output/WolfPsort/WolfPsort.log | \
 grep -E -o ".* extr [0-9]{,2}" | \
-awk -v w="$THRESHOLD_WOLFPSORT" 'BEGIN {FS=" "} {if ($2 == "extr" && $3 > w) print $1}' | \
+awk -v w="$WOLFPSORT_THRESHOLD" 'BEGIN {FS=" "} {if ($2 == "extr" && $3 > w) print $1}' | \
 sort | \
 tee "$OUTPUT"/FunSec_Output/WolfPsort/"$FILE_NAME"
-if [ ! -s "$OUTPUT"/FunSec_Output/WolfPsort/"$FILE_NAME" ]
-then 
+if [ ! -s "$OUTPUT"/FunSec_Output/WolfPsort/"$FILE_NAME" ]; then
 	echo -e "No proteins were predicted to be secreted. Exiting..."
 	citation
-	exit 1
+	exit 0
 fi
 echo -e "\nFinished. (Runtime - $SECONDS seconds)"
 
 # ProtComp 9.0
 
 echo -e "\nRunning ProtComp 9.0...\n"
-mkdir -p "$OUTPUT"/FunSec_Output/ProtComp/Log
-"$SCRIPT_DIR"/bin/lin/pc_fm "$OUTPUT"/FunSec_Output/SignalP_TMHMM_Phobius/"$FILE_NAME" -NODB -NOOL | \
-tee -a "$OUTPUT"/FunSec_Output/ProtComp/Log/ProtComp.log | \
+mkdir "$OUTPUT"/FunSec_Output/ProtComp
+"$SCRIPT_DIR"/bin/lin/pc_fm "$OUTPUT"/FunSec_Output/SignalP_TMHMM_Phobius/"$FILE_NAME".fa -NODB -NOOL | \
+tee "$OUTPUT"/FunSec_Output/ProtComp/ProtComp.log | \
 awk 'BEGIN {RS="Seq name: "} /Integral Prediction of protein location: Membrane bound Extracellular/ || /Integral Prediction of protein location: Extracellular/ {print $1}' | \
 sed 's/,$//g' | \
 sort | \
 tee "$OUTPUT"/FunSec_Output/ProtComp/"$FILE_NAME"
-if [ ! -s "$OUTPUT"/FunSec_Output/ProtComp/"$FILE_NAME" ]
-then 
+if [ ! -s "$OUTPUT"/FunSec_Output/ProtComp/"$FILE_NAME" ]; then 
 	echo -e "No proteins were predicted to be secreted. Exiting..."
 	citation
-	exit 1
+	exit 0
 fi
 echo -e "\nFinished. (Runtime - $SECONDS seconds)"
 
-# WolfPsort and ProtComp
+# TargetP 1.1
 
-echo -e "\nSelecting the common sequences found by WolfPsort 0.2 and ProtComp 9.0...\n"
-mkdir -p "$OUTPUT"/FunSec_Output/WolfPsort_ProtComp/Headers
-comm -12 "$OUTPUT"/FunSec_Output/WolfPsort/"$FILE_NAME" "$OUTPUT"/FunSec_Output/ProtComp/"$FILE_NAME" | \
-tee "$OUTPUT"/FunSec_Output/WolfPsort_ProtComp/Headers/"$FILE_NAME"
-if [ ! -s "$OUTPUT"/FunSec_Output/WolfPsort_ProtComp/Headers/"$FILE_NAME" ]
-then 
+echo -e "\nRunning TargetP 1.1...\n"
+mkdir "$OUTPUT"/FunSec_Output/TargetP
+"$SCRIPT_DIR"/bin/targetp-1.1/targetp -N -t "$TARGETP_MTP_CUTOFF" -s "$TARGETP_SP_CUTOFF" -o "$TARGETP_OTHER_CUTOFF" "$OUTPUT"/FunSec_Output/SignalP_TMHMM_Phobius/"$FILE_NAME".fa | \
+tee "$OUTPUT"/FunSec_Output/TargetP/TargetP.log | \
+awk '{if ($6 == "S") print $1}' | \
+sort | \
+tee "$OUTPUT"/FunSec_Output/TargetP/"$FILE_NAME"
+if [ ! -s "$OUTPUT"/FunSec_Output/TargetP/"$FILE_NAME" ]; then
+	echo -e "No proteins were predicted to be secreted. Exiting..."
+	citation
+	exit 0
+fi
+echo -e "\nFinished. (Runtime - $SECONDS seconds)"
+
+# WolfPsort, ProtComp and TargetP
+
+echo -e "\nSelecting the common sequences found by WolfPsort 0.2, ProtComp 9.0 and TargetP 1.1...\n"
+mkdir "$OUTPUT"/FunSec_Output/WolfPsort_ProtComp_TargetP
+comm -12 "$OUTPUT"/FunSec_Output/WolfPsort/"$FILE_NAME" "$OUTPUT"/FunSec_Output/ProtComp/"$FILE_NAME" > "$OUTPUT"/FunSec_Output/WolfPsort_ProtComp_TargetP/pre_"$FILE_NAME"
+comm -12 "$OUTPUT"/FunSec_Output/WolfPsort_ProtComp_TargetP/pre_"$FILE_NAME" "$OUTPUT"/FunSec_Output/TargetP/"$FILE_NAME" | \
+tee "$OUTPUT"/FunSec_Output/WolfPsort_ProtComp_TargetP/"$FILE_NAME"
+find "$OUTPUT"/FunSec_Output/WolfPsort_ProtComp_TargetP -type f -name pre_"$FILE_NAME" -delete
+if [ ! -s "$OUTPUT"/FunSec_Output/WolfPsort_ProtComp_TargetP/"$FILE_NAME" ]; then 
 	echo -e "No common proteins were found. Exiting..."
 	citation
-	exit 1
+	exit 0
 else
-	while read -r f
-	do
-		awk -v f="$f" 'BEGIN {RS=">"} {if ($1 == f) print RS$0}' "$OUTPUT"/FunSec_Output/SignalP_TMHMM_Phobius/"$FILE_NAME" | \
-		sed '/^$/d' >> "$OUTPUT"/FunSec_Output/WolfPsort_ProtComp/"$FILE_NAME"
-	done < "$OUTPUT"/FunSec_Output/WolfPsort_ProtComp/Headers/"$FILE_NAME"
+	while read -r f; do
+		awk -v f="$f" 'BEGIN {RS=">"} {if ($1 == f) print RS$0}' "$OUTPUT"/FunSec_Output/SignalP_TMHMM_Phobius/"$FILE_NAME".fa | \
+		sed '/^$/d' >> "$OUTPUT"/FunSec_Output/WolfPsort_ProtComp_TargetP/"$FILE_NAME".fa
+	done < "$OUTPUT"/FunSec_Output/WolfPsort_ProtComp_TargetP/"$FILE_NAME"
 fi
 echo -e "\nFinished. (Runtime - $SECONDS seconds)"
 
 # Ps-scan 1.86
 
 echo -e "\nRunning Ps-scan 1.86...\n"
-mkdir -p "$OUTPUT"/FunSec_Output/Ps-scan/Log "$OUTPUT"/FunSec_Output/Final
-cat "$OUTPUT"/FunSec_Output/WolfPsort_ProtComp/"$FILE_NAME" | \
+mkdir "$OUTPUT"/FunSec_Output/Ps-scan "$OUTPUT"/FunSec_Output/Final
+cat "$OUTPUT"/FunSec_Output/WolfPsort_ProtComp_TargetP/"$FILE_NAME".fa | \
 parallel -j "$PARALLEL_JOBS" --noswap --load 80% --no-notice --pipe --recstart ">" ""$SCRIPT_DIR"/bin/ps_scan/ps_scan.pl -p \"[KRHQSA]-[DENQ]-E-L>\"" | \
-tee -a "$OUTPUT"/FunSec_Output/Ps-scan/Log/Ps-scan.log | \
+tee "$OUTPUT"/FunSec_Output/Ps-scan/Ps-scan.log | \
 awk 'BEGIN{RS=">"} {print $1}' | \
 sed '/^$/d' | \
 sort > "$OUTPUT"/FunSec_Output/Ps-scan/"$FILE_NAME"
-if [ ! -s  "$OUTPUT"/FunSec_Output/Ps-scan/"$FILE_NAME" ]
-then 
+if [ ! -s  "$OUTPUT"/FunSec_Output/Ps-scan/"$FILE_NAME" ]; then
 	echo -e "No endoplasmic reticulum targeting motifs found."
-	rm -rf "$OUTPUT"/FunSec_Output/WolfPsort_ProtComp/Headers
-	cp -r "$OUTPUT"/FunSec_Output/WolfPsort_ProtComp/* "$OUTPUT"/FunSec_Output/Final/
+	find "$OUTPUT"/FunSec_Output/WolfPsort_ProtComp_TargetP -type f -name "$FILE_NAME" -delete
+	cp "$OUTPUT"/FunSec_Output/WolfPsort_ProtComp_TargetP/"$FILE_NAME".fa "$OUTPUT"/FunSec_Output/Final/
 else
-	mkdir "$OUTPUT"/FunSec_Output/Final/Headers 
-	comm -13 "$OUTPUT"/FunSec_Output/Ps-scan/"$FILE_NAME" "$OUTPUT"/FunSec_Output/WolfPsort_ProtComp/Headers/"$FILE_NAME" > "$OUTPUT"/FunSec_Output/Final/Headers/"$FILE_NAME"
-	if [ ! -s "$OUTPUT"/FunSec_Output/Final/Headers/"$FILE_NAME" ]
-	then
-		echo -e "No proteins were predicted to be secreted. Exiting..."
+	cat "$OUTPUT"/FunSec_Output/Ps-scan/"$FILE_NAME"
+	comm -13 "$OUTPUT"/FunSec_Output/Ps-scan/"$FILE_NAME" "$OUTPUT"/FunSec_Output/WolfPsort_ProtComp_TargetP/"$FILE_NAME" > "$OUTPUT"/FunSec_Output/Final/"$FILE_NAME"
+	if [ ! -s "$OUTPUT"/FunSec_Output/Final/"$FILE_NAME" ]; then
+		echo -e "\nNo proteins were predicted to be secreted. Exiting..."
 		citation
-		exit 1
+		exit 0
 	else
-		while read -r f	
-		do
-			awk -v f="$f" 'BEGIN{RS=">"} {if ($1 == f) print RS$0}' "$OUTPUT"/FunSec_Output/WolfPsort_ProtComp/"$FILE_NAME" | \
-			sed '/^$/d' | \
-			tee -a "$OUTPUT"/FunSec_Output/Final/"$FILE_NAME" | \
-			awk 'BEGIN{RS=">"}END{printf $1"\n"}'
-		done < "$OUTPUT"/FunSec_Output/Final/Headers/"$FILE_NAME"
-		rm -rf "$OUTPUT"/FunSec_Output/WolfPsort_ProtComp/Headers
-		rm -rf "$OUTPUT"/FunSec_Output/Final/Headers
+		while read -r f; do 
+			awk -v f="$f" 'BEGIN{RS=">"} {if ($1 == f) print RS$0}' "$OUTPUT"/FunSec_Output/WolfPsort_ProtComp_TargetP/"$FILE_NAME".fa | \
+			sed '/^$/d' >> "$OUTPUT"/FunSec_Output/Final/"$FILE_NAME".fa
+		done < "$OUTPUT"/FunSec_Output/Final/"$FILE_NAME"
+		find "$OUTPUT"/FunSec_Output/WolfPsort_ProtComp_TargetP -type f -name "$FILE_NAME" -delete
+		find "$OUTPUT"/FunSec_Output/Final -type f -name "$FILE_NAME" -delete
 	fi
 fi
 
 # Final Message
 
-echo -e "\n$0 has finished (Runtime - $SECONDS seconds). The final secreted proteins can be found in $OUTPUT/FunSec_Output/Final.\n"
-grep -H -c "^>" "$OUTPUT"/FunSec_Output/Final/*
+echo -e "\n$0 has finished (Runtime - $SECONDS seconds). The final secreted proteins can be found in $OUTPUT/FunSec_Output/Final/$FILE_NAME.fa.\n"
+grep -H -c "^>" "$OUTPUT"/FunSec_Output/Final/"$FILE_NAME".fa
 citation
 exit 0
